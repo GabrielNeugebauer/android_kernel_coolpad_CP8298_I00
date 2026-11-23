@@ -12,7 +12,7 @@
 #include <linux/of.h>
 #include <mt-plat/mt_gpio.h>
 
-#define RT8542_GPIO_BL_EN	(GPIO65 | 0x80000000)
+#define RT8542_GPIO_BL_EN	(65 | 0x80000000)
 #define RT8542_REG_OVP		0x02
 #define RT8542_REG_BL		0x05
 #define RT8542_REG_EN		0x0A

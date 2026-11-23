@@ -29,18 +29,6 @@
 	debounce = <10 0>;
 	status = "okay";
 };
-&accel_int {
-	interrupt-parent = <&eintc>;
-	interrupts = <66 IRQ_TYPE_LEVEL_LOW>;
-	debounce = <66 0>;
-	status = "okay";
-};
-&proximity_int {
-	interrupt-parent = <&eintc>;
-	interrupts = <82 IRQ_TYPE_EDGE_FALLING>;
-	debounce = <82 0>;
-	status = "okay";
-};
 
 
 /********************

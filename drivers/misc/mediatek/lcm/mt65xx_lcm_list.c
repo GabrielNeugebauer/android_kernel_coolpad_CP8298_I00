@@ -1031,8 +1031,10 @@ unsigned int lcm_count = sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *);
 LCM_COMPILE_ASSERT(0 != sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *));
 
 /**add by phg for compile for lcm**/
+#if defined(MTK_LCM_DEVICE_TREE_SUPPORT)
 unsigned int lcm_name_count = sizeof(lcm_name_list) / sizeof(lcm_name_list[0]);
 LCM_COMPILE_ASSERT(0 != sizeof(lcm_name_list) / sizeof(lcm_name_list[0]));
+#endif
 /**end by phg for compile for lcm**/
 
 #if defined(NT35520_HD720_DSI_CMD_TM) | defined(NT35520_HD720_DSI_CMD_BOE) | \

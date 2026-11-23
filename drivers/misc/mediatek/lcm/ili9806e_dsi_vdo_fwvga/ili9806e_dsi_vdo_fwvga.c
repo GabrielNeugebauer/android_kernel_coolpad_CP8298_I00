@@ -11,7 +11,7 @@
 #include "lcm_drv.h"
 /* LG K130 (me1ds) pins, from its codegen.dws */
 #ifndef GPIO_LCM_RST
-#define GPIO_LCM_RST		(GPIO146 | 0x80000000)
+#define GPIO_LCM_RST		(146 | 0x80000000)
 #define GPIO_LCM_RST_M_GPIO	GPIO_MODE_00
 #endif
 #if defined(BUILD_LK)
@@ -42,14 +42,14 @@
 
 /* DSV power +5V,-5v */
 #ifndef GPIO_DSV_AVDD_EN
-#define GPIO_DSV_AVDD_EN (GPIO41 | 0x80000000)
+#define GPIO_DSV_AVDD_EN (41 | 0x80000000)
 #define GPIO_DSV_AVDD_EN_M_GPIO GPIO_MODE_00
 #define GPIO_DSV_AVDD_EN_M_KROW GPIO_MODE_06
 #define GPIO_DSV_AVDD_EN_M_PWM GPIO_MODE_05
 #endif
 
 #ifndef GPIO_DSV_AVEE_EN
-#define GPIO_DSV_AVEE_EN (GPIO42 | 0x80000000)
+#define GPIO_DSV_AVEE_EN (42 | 0x80000000)
 #define GPIO_DSV_AVEE_EN_M_GPIO GPIO_MODE_00
 #define GPIO_DSV_AVEE_EN_M_KROW GPIO_MODE_06
 #define GPIO_DSV_AVEE_EN_M_PWM GPIO_MODE_05
@@ -798,12 +798,13 @@ static void lcm_resume(void)
 	LCM_PRINT("[LCD] lcm_resume \n");
 }
 
-static void lcm_esd_recover(void)
+static unsigned int lcm_esd_recover(void)
 {
 	lcm_suspend();
 	lcm_resume();
 
 	LCM_PRINT("[LCD] lcm_esd_recover \n");
+	return 0;
 }
 
 static void lcm_update(unsigned int x, unsigned int y,
