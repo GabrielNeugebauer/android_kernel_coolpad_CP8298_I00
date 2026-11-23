@@ -5851,7 +5851,9 @@ int primary_display_suspend(void)
 	DISPMSG("[POWER]dpmanager path power off[begin]\n");
 	dpmgr_path_power_off(pgc->dpmgr_handle, CMDQ_DISABLE);
 	DISPMSG("[POWER]dpmanager path power off[end]\n");
+#ifdef CONFIG_MTK_LCM_DEVICE_TREE_SUPPORT
 	lcm_vddi_power_off();
+#endif
 
 	if (_is_decouple_mode(pgc->session_mode)) {
 		dpmgr_path_power_off(pgc->ovl2mem_path_handle, CMDQ_DISABLE);
@@ -5916,7 +5918,9 @@ int primary_display_resume(void)
 	dpmgr_reset_module_handle(pgc->dpmgr_handle);
 #endif
 //start 2016.04.04 add by lijianbin for lcd power lijianbin@yulong.com
+#ifdef CONFIG_MTK_LCM_DEVICE_TREE_SUPPORT
     lcm_vddi_power_on();
+#endif
 //end 2016.04.04 add by lijianbin for lcd power lijianbin@yulong.com
 	/* For CCF, we move the power on control to noirq_restore in mtkfb */
 	DISPMSG("dpmanager path power on[begin]\n");
