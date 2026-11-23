@@ -189,6 +189,13 @@ config TOUCHSCREEN_AEON_FT5X0X
 	  To compile this dirver as a module, choose M here: the
 	  module will be called.
 
+config TOUCHSCREEN_AEON_FOCALTECH_ME1DS
+	bool "LG K130 (me1ds) panel settings for aeon_focaltech"
+	depends on TOUCHSCREEN_AEON_FOCALTECH
+	help
+	  480x854 FT6x36 without capacitive keys. Firmware is never
+	  flashed automatically (TPD_AUTO_UPGRADE stays off).
+
 config TOUCHSCREEN_AEON_FOCALTECH
 	bool "aeon_focaltech for Eastaeon package"
 	default n

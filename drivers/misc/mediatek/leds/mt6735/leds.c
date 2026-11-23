@@ -27,6 +27,9 @@
 #include <mach/upmu_sw.h>
 #include <mach/upmu_hw.h>*/
 
+#ifdef CONFIG_LEDS_RT8542
+extern int rt8542_set_backlight(int level, int div);
+#endif
 #ifdef CONFIG_MTK_AAL_SUPPORT
 #include <ddp_aal.h>
 /* #include <linux/aee.h> */
@@ -252,8 +255,13 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 
 				switch (pled_dtsi[i].mode) {
 				case MT65XX_LED_MODE_CUST_LCM:
+#ifdef CONFIG_LEDS_RT8542
+					pled_dtsi[i].data =
+					    (long)rt8542_set_backlight;
+#else
 					pled_dtsi[i].data =
 					    (long)mtkfb_set_backlight_level;
+#endif
 					LEDS_DEBUG
 					    ("kernel:the backlight hw mode is LCM.\n");
 					break;

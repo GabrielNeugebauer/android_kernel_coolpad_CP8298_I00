@@ -24,3 +24,6 @@ DEFINES += MTK_LCM_PHYSICAL_ROTATION=\"$(MTK_LCM_PHYSICAL_ROTATION)\"
 ccflags-$(CONFIG_MTK_LCM) += $(addprefix -D, $(DEFINES))
 ccflags-$(CONFIG_MTK_LCM_DEVICE_TREE_SUPPORT) += -DMTK_LCM_DEVICE_TREE_SUPPORT
 
+
+# Plain C panel drivers (used when the LCM is not described in the device tree)
+obj-$(CONFIG_MTK_LCM) += $(foreach LCM,$(LCM_LISTS),$(if $(wildcard $(srctree)/$(src)/$(LCM)/Makefile),$(LCM)/))

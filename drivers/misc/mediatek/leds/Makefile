@@ -14,3 +14,5 @@ else
 $(info leds by platform)
 obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 endif
+
+obj-$(CONFIG_LEDS_RT8542) += rt8542/

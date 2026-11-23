@@ -4,6 +4,7 @@
 #include <lcm_drv.h>
 
 #if defined(MTK_LCM_DEVICE_TREE_SUPPORT)
+extern LCM_DRIVER ili9806e_dsi_vdo_fwvga_drv;
 extern LCM_DRIVER lcm_common_drv;
 #else
 extern LCM_DRIVER otm1282a_hd720_dsi_vdo_60hz_lcm_drv;
