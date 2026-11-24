@@ -901,3 +901,12 @@
 	      <0x15001000 0x1000>,	/* LARB 2 */
 	      <0x17001000 0x1000>;	/* LARB 3 */
 };
+
+/* FocalTech FT6x36 touch controller: I2C1, address 0x38 (LG lgtp_model_config_i2c.h) */
+&i2c1 {
+	ft_touch@38 {
+		compatible = "mediatek,ft_touch";
+		reg = <0x38>;
+		status = "okay";
+	};
+};
