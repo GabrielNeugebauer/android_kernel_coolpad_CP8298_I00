@@ -697,3 +697,35 @@
 /* USB GPIO Kernal Standardization end */
 
 
+
+/*
+ * The MT6735M (D2) clkmgr, thermal and video codec drivers look nodes up
+ * by MediaTek's older upper-case names (LG's mt6735m.dtsi). Give the
+ * matching mt6735.dtsi nodes those names too; the D2 encoder lives at
+ * 0x15009000, not the D1 VENC block.
+ */
+&imgsys {
+	compatible = "mediatek,mt6735-imgsys", "mediatek,IMGSYS";
+};
+
+&vdec_gcon {
+	compatible = "mediatek,mt6735-vdec_gcon", "mediatek,VDEC_GCON";
+};
+
+&vdec {
+	compatible = "mediatek,mt6735-vdec", "mediatek,VDEC_FULL_TOP";
+};
+
+&therm_ctrl {
+	compatible = "mediatek,mt6735-therm_ctrl", "mediatek,THERM_CTRL";
+};
+
+/ {
+	soc {
+		venc_d2@15009000 {
+			compatible = "mediatek,VENC";
+			reg = <0x15009000 0x1000>;
+			interrupts = <GIC_SPI 180 IRQ_TYPE_LEVEL_LOW>;
+		};
+	};
+};

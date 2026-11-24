@@ -928,7 +928,7 @@ initrd=0x44000000,0x300000 loglevel=8 androidboot.hardware=mt6735";
 			clock-div = <1>;
 		};
 
-		therm_ctrl@1100b000 {
+		therm_ctrl: therm_ctrl@1100b000 {
 			compatible = "mediatek,mt6735-therm_ctrl";
 			reg = <0x1100b000 0x1000>;
 			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_LOW>;
