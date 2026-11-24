@@ -105,10 +105,57 @@ static void me1ds_newline(void)
 	me1ds_fill_row((cur_y + 1) % ROWS, 0xffffffff);
 }
 
+/*
+ * Once an oops starts, keep only the lines that identify it (no register
+ * or stack dumps, no other CPUs' backtraces) and freeze at the panic line
+ * so the report stays on screen until the reset.
+ */
+static bool me1ds_oops, me1ds_frozen;
+
+static bool me1ds_has(const char *s, unsigned n, const char *pat)
+{
+	return strnstr(s, pat, n) != NULL;
+}
+
+static bool me1ds_keep_line(const char *s, unsigned n)
+{
+	static const char * const starts[] = {
+		"Unable to handle", "Internal error", "kernel BUG",
+		"Kernel panic", "Bad mode", "BUG:", "Oops",
+	};
+	static const char * const keep[] = {
+		"PC is at", "LR is at", "Call trace", "[<ffffff", "Comm:",
+		"Process ", "pgd =", "Code:", "Unable to handle",
+		"Internal error", "kernel BUG", "Kernel panic", "Bad mode",
+		"BUG:", "Oops", "Exception stack",
+	};
+	int i;
+
+	if (me1ds_frozen)
+		return false;
+	if (!me1ds_oops) {
+		for (i = 0; i < ARRAY_SIZE(starts); i++)
+			if (me1ds_has(s, n, starts[i]))
+				me1ds_oops = true;
+		if (!me1ds_oops)
+			return true;
+	}
+	for (i = 0; i < ARRAY_SIZE(keep); i++)
+		if (me1ds_has(s, n, keep[i])) {
+			if (me1ds_has(s, n, "Kernel panic"))
+				me1ds_frozen = true;
+			return true;
+		}
+	return false;
+}
+
 static void me1ds_con_write(struct console *con, const char *s, unsigned n)
 {
 	const u8 *glyphs = font_vga_8x16.data;
 	int b, y;
+
+	if (!me1ds_keep_line(s, n))
+		return;
 
 	for (; n; n--, s++) {
 		if (*s == '\n') {
