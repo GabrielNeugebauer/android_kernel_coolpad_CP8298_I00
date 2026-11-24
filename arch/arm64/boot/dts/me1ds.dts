@@ -913,3 +913,21 @@
 		status = "okay";
 	};
 };
+
+/*
+ * MT6735M has no dedicated BTIF DMA channels: BTIF uses the UART4 pair
+ * (LG mt6735m.dtsi AP_DMA_BTIF_TX/RX); 0x11000880/900 do not exist on D2.
+ */
+&ap_dma {
+	interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_LOW>;
+};
+
+&btif_tx {
+	reg = <0x11000780 0x80>;
+	interrupts = <GIC_SPI 111 IRQ_TYPE_LEVEL_LOW>;
+};
+
+&btif_rx {
+	reg = <0x11000800 0x80>;
+	interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_LOW>;
+};
