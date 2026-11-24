@@ -729,3 +729,175 @@
 		};
 	};
 };
+
+/*
+ * MT6735M multimedia map. The D2 display blocks after OVL0 sit one 4 KiB
+ * slot higher than on MT6735, the IRQs and GCE events are numbered
+ * differently, and there is no VENC larb3. Values from MediaTek's
+ * mt6735m.dtsi, matching LG's K130 DISPSYS node.
+ */
+&dispsys {
+	reg = <0x14007000 0x1000>,  /*DISP_OVL0      */
+	<0 0>,		    /*DISP_OVL1      */
+	<0x14009000 0x1000>,  /*DISP_RDMA0     */
+	<0 0>,  /*DISP_RDMA1     */
+	<0x1400B000 0x1000>,  /*DISP_WDMA0     */
+	<0x1400C000 0x1000>,  /*DISP_COLOR     */
+	<0x1400D000 0x1000>,  /*DISP_CCORR     */
+	<0x1400E000 0x1000>,  /*DISP_AAL       */
+	<0x1400F000 0x1000>,  /*DISP_GAMMA     */
+	<0x14010000 0x1000>,  /*DISP_DITHER    */
+	<0 0>,		    /*DISP_UFOE      */
+	<0x1100E000 0x1000>,  /*DISP_PWM       */
+	<0 0>,		    /*DISP_WDMA1     */
+	<0x14015000 0x1000>,  /*DISP_MUTEX     */
+	<0x14012000 0x1000>,  /*DISP_DSI0      */
+	<0x14013000 0x1000>,  /*DISP_DPI0      */
+	<0x14000000 0x1000>,  /*DISP_CONFIG    */
+	<0x14016000 0x1000>,  /*DISP_SMI_LARB0 */
+	<0x14017000 0x1000>,  /*DISP_SMI_COMMOM*/
+	<0x14018000 0x1000>,  /*MIPITX0,real chip would use this:<0x14017000 0x1000>;*/
+	<0x10206000 0x1000>,  /*DISP_CONFIG2*/
+	<0x10210000 0x1000>,  /*DISP_CONFIG3*/
+	<0x10211A70 0x000C>,  /*DISP_DPI_IO_DRIVING1 */
+	<0x10211974 0x000C>,  /*DISP_DPI_IO_DRIVING2 */
+	<0x10211B70 0x000C>,  /*DISP_DPI_IO_DRIVING3 */
+	<0x10206044 0x000C>,  /*DISP_DPI_EFUSE */
+	<0x10206514 0x000C>,  /*DISP_DPI_EFUSE_PERMISSION */
+	<0x10206558 0x000C>,  /*DISP_DPI_EFUSE_KEY */
+	<0x102100A0 0x1000>,  /*DISP_TVDPLL_CFG6 */
+	<0x10209270 0x1000>,  /*DISP_TVDPLL_CON0 */
+	<0x10209274 0x1000>,  /*DISP_TVDPLL_CON1 */
+	<0 0>,		    /*DISP_OD      */
+	<0x10209000 0x1000>;
+	interrupts = <GIC_SPI 193 IRQ_TYPE_LEVEL_LOW>, /*DISP_OVL0 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_OVL1 */
+	<GIC_SPI 195 IRQ_TYPE_LEVEL_LOW>, /*DISP_RDMA0 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>, /*DISP_RDMA1 */
+	<GIC_SPI 197 IRQ_TYPE_LEVEL_LOW>, /*DISP_WDMA0 */
+	<GIC_SPI 198 IRQ_TYPE_LEVEL_LOW>, /*DISP_COLOR */
+	<GIC_SPI 199 IRQ_TYPE_LEVEL_LOW>, /*DISP_CCORR */
+	<GIC_SPI 200 IRQ_TYPE_LEVEL_LOW>, /*DISP_AAL */
+	<GIC_SPI 201 IRQ_TYPE_LEVEL_LOW>, /*DISP_GAMMA */
+	<GIC_SPI 202 IRQ_TYPE_LEVEL_LOW>, /*DISP_DITHER */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_UFOE */
+	<GIC_SPI 117 IRQ_TYPE_LEVEL_LOW>, /*DISP_PWM */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_WDMA1 */
+	<GIC_SPI 186 IRQ_TYPE_LEVEL_LOW>, /*DISP_MUTEX */
+	<GIC_SPI 204 IRQ_TYPE_LEVEL_LOW>, /*DISP_DSI0 */
+	<GIC_SPI 205 IRQ_TYPE_LEVEL_LOW>, /*DISP_DPI0 */
+	<GIC_SPI 206 IRQ_TYPE_LEVEL_LOW>, /*DISP_CONFIG, 0 means no IRQ*/
+	<GIC_SPI 176 IRQ_TYPE_LEVEL_LOW>, /*DISP_SMI_LARB0 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_SMI_COMMOM*/
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*MIPITX0 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_CONFIG2*/
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_CONFIG3*/
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_DPI_IO_DRIVING */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_TVDPLL_CFG6 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_TVDPLL_CON0 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_TVDPLL_CON1 */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>,   /*DISP_OD      */
+	<GIC_SPI 0 IRQ_TYPE_LEVEL_LOW>;
+};
+
+&gce {
+	disp_mutex_reg = <0x14015000 0x1000>;
+	g3d_config_base = <0x13000000 0 0xffff0000>;
+	mmsys_config_base = <0x14000000 1 0xffff0000>;
+	disp_dither_base = <0x14010000 2 0xffff0000>;
+	mm_na_base = <0x14020000 3 0xffff0000>;
+	imgsys_base = <0x15000000 4 0xffff0000>;
+	vdec_gcon_base = <0x16000000 5 0xffff0000>;
+	venc_gcon_base = <0x17000000 6 0xffff0000>;
+	conn_peri_base = <0x18000000 7 0xffff0000>;
+	topckgen_base = <0x10000000 8 0xffff0000>;
+	kp_base = <0x10010000 9 0xffff0000>;
+	scp_sram_base = <0x10020000 10 0xffff0000>;
+	infra_na3_base = <0x10030000 11 0xffff0000>;
+	infra_na4_base = <0x10040000 12 0xffff0000>;
+	scp_base = <0x10050000 13 0xffff0000>;
+	mcucfg_base = <0x10200000 14 0xffff0000>;
+	gcpu_base = <0x10210000 15 0xffff0000>;
+	usb0_base = <0x11200000 16 0xffff0000>;
+	usb_sif_base = <0x11210000 17 0xffff0000>;
+	audio_base = <0x11220000 18 0xffff0000>;
+	msdc0_base = <0x11230000 19 0xffff0000>;
+	msdc1_base = <0x11240000 20 0xffff0000>;
+	msdc2_base = <0x11250000 21 0xffff0000>;
+	msdc3_base = <0x11260000 22 0xffff0000>;
+	pwm_sw_base = <0x1100E000 99 0xfffff000>;
+	mdp_rdma0_sof = <0>;
+	mdp_rsz0_sof = <1>;
+	mdp_rsz1_sof = <2>;
+	mdp_tdshp_sof = <3>;
+	mdp_wdma_sof = <4>;
+	mdp_wrot_sof = <5>;
+	disp_ovl0_sof = <6>;
+	disp_rdma0_sof = <8>;
+	disp_rdma1_sof = <9>;
+	disp_wdma0_sof = <10>;
+	disp_ccorr_sof = <11>;
+	disp_color_sof = <12>;
+	disp_aal_sof = <13>;
+	disp_gamma_sof = <14>;
+	disp_dither_sof = <15>;
+	disp_pwm0_sof = <17>;
+	mdp_rdma0_frame_done = <18>;
+	mdp_rsz0_frame_done = <19>;
+	mdp_rsz1_frame_done = <20>;
+	mdp_tdshp_frame_done = <21>;
+	mdp_wdma_frame_done = <22>;
+	mdp_wrot_write_frame_done = <23>;
+	mdp_wrot_read_frame_done = <24>;
+	disp_ovl0_frame_done = <25>;
+	disp_rdma0_frame_done = <27>;
+	disp_rdma1_frame_done = <28>;
+	disp_wdma0_frame_done = <29>;
+	disp_ccorr_frame_done = <30>;
+	disp_color_frame_done = <31>;
+	disp_aal_frame_done = <32>;
+	disp_gamma_frame_done = <33>;
+	disp_dither_frame_done = <34>;
+	disp_dpi0_frame_done = <36>;
+	disp_dsi0_frame_done = <37>;
+	stream_done_0 = <38>;
+	stream_done_1 = <39>;
+	stream_done_2 = <40>;
+	stream_done_3 = <41>;
+	stream_done_4 = <42>;
+	stream_done_5 = <43>;
+	stream_done_6 = <44>;
+	stream_done_7 = <45>;
+	stream_done_8 = <46>;
+	stream_done_9 = <47>;
+	buf_underrun_event_0 = <48>;
+	buf_underrun_event_1 = <49>;
+	dsi0_te_event = <50>;
+	isp_frame_done_p2_1 = <66>;
+	isp_frame_done_p2_0 = <67>;
+	seninf_cam0_fifo_full = <73>;
+	apxgpt2_count = <0x10004028>;
+};
+
+&dpi {
+	reg = <0x14013000 0x1000>;
+};
+
+&smi_larb0 {
+	reg = <0x14016000 0x1000>;
+};
+
+&smi_common {
+	reg = <0x14017000 0x1000>,	/* SMI_COMMON_EXT */
+	      <0x14016000 0x1000>,	/* LARB 0 */
+	      <0x16010000 0x1000>,	/* LARB 1 */
+	      <0x15001000 0x1000>;	/* LARB 2 */
+};
+
+&met_smi {
+	reg = <0x14017000 0x1000>,	/* SMI_COMMON_EXT */
+	      <0x14016000 0x1000>,	/* LARB 0 */
+	      <0x16010000 0x1000>,	/* LARB 1 */
+	      <0x15001000 0x1000>,	/* LARB 2 */
+	      <0x17001000 0x1000>;	/* LARB 3 */
+};
