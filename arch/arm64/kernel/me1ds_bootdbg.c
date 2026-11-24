@@ -149,10 +149,44 @@ static bool me1ds_keep_line(const char *s, unsigned n)
 	return false;
 }
 
+/*
+ * Every line also goes, as plain text, into the 64 KiB at 0x43f00000 that
+ * LG's stock kernel dumps raw through /proc/last_kmsg after a watchdog
+ * reset ("header may be corrupted"). A "@@END@@" marker follows the
+ * newest text; the buffer wraps.
+ */
+#define ME1DS_RAMLOG_BASE	0x43f00000
+#define ME1DS_RAMLOG_SIZE	0x10000
+static const char me1ds_end[] = "\n@@END@@\n";
+static char *me1ds_ram;
+static unsigned int me1ds_ram_pos;
+
+static void me1ds_ram_put(const char *s, unsigned n)
+{
+	unsigned int start = me1ds_ram_pos, i;
+
+	for (; n; n--, s++) {
+		me1ds_ram[me1ds_ram_pos] = *s;
+		me1ds_ram_pos = (me1ds_ram_pos + 1) % ME1DS_RAMLOG_SIZE;
+	}
+	for (i = 0; i < sizeof(me1ds_end) - 1; i++)
+		me1ds_ram[(me1ds_ram_pos + i) % ME1DS_RAMLOG_SIZE] = me1ds_end[i];
+
+	if (me1ds_ram_pos + sizeof(me1ds_end) <= ME1DS_RAMLOG_SIZE &&
+	    me1ds_ram_pos >= start)
+		__flush_dcache_area(me1ds_ram + start,
+				    me1ds_ram_pos - start + sizeof(me1ds_end));
+	else
+		__flush_dcache_area(me1ds_ram, ME1DS_RAMLOG_SIZE);
+}
+
 static void me1ds_con_write(struct console *con, const char *s, unsigned n)
 {
 	const u8 *glyphs = font_vga_8x16.data;
 	int b, y;
+
+	if (me1ds_ram)
+		me1ds_ram_put(s, n);
 
 	if (!me1ds_keep_line(s, n))
 		return;
@@ -189,6 +223,11 @@ static int __init me1ds_con_init(void)
 	me1ds_fill_row(1, 0xffffffff);
 	initcall_debug = true;
 	console_loglevel = 8;
+	if (pfn_valid(__phys_to_pfn(ME1DS_RAMLOG_BASE))) {
+		me1ds_ram = phys_to_virt(ME1DS_RAMLOG_BASE);
+		memset(me1ds_ram, ' ', ME1DS_RAMLOG_SIZE);
+		me1ds_ram_put("== me1ds 3.18 boot log ==\n", 26);
+	}
 	me1ds_text_on = true;
 	register_console(&me1ds_con);
 	return 0;
