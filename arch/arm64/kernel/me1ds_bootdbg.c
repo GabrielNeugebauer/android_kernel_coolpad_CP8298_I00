@@ -150,34 +150,84 @@ static bool me1ds_keep_line(const char *s, unsigned n)
 }
 
 /*
- * Every line also goes, as plain text, into the 64 KiB at 0x43f00000 that
- * LG's stock kernel dumps raw through /proc/last_kmsg after a watchdog
- * reset ("header may be corrupted"). A "@@END@@" marker follows the
- * newest text; the buffer wraps.
+ * Every line also goes into the ram_console buffer at 0x43f00000 in the
+ * layout LG's stock 3.10 kernel expects (preloader header kept, console
+ * ring after the 32-bit last_reboot_reason), so stock Android shows this
+ * log in /proc/last_kmsg after a watchdog reset.
  */
 #define ME1DS_RAMLOG_BASE	0x43f00000
 #define ME1DS_RAMLOG_SIZE	0x10000
-static const char me1ds_end[] = "\n@@END@@\n";
-static char *me1ds_ram;
-static unsigned int me1ds_ram_pos;
+#define ME1DS_RC_SIG		0x43474244	/* "DBGC" */
+#define ME1DS_LRR_SIZE		0x180	/* ALIGN(sizeof(last_reboot_reason) on 32-bit, 64) */
+
+struct me1ds_rc_hdr {
+	u32 sig;
+	u32 off_pl, off_lpl, sz_pl;
+	u32 off_lk, off_llk, sz_lk;
+	u32 padding[3];
+	u32 sz_buffer;
+	u32 off_linux;
+	u32 off_console;
+	u32 log_start;
+	u32 log_size;
+	u32 sz_console;
+};
+
+static struct me1ds_rc_hdr *me1ds_rc;
+static char *me1ds_rc_log;
+
+static void me1ds_ram_init(void)
+{
+	struct me1ds_rc_hdr *h = phys_to_virt(ME1DS_RAMLOG_BASE);
+
+	if (h->sig != ME1DS_RC_SIG || h->sz_buffer != ME1DS_RAMLOG_SIZE) {
+		memset(h, 0, ME1DS_RAMLOG_SIZE);
+		h->sig = ME1DS_RC_SIG;
+		h->sz_buffer = ME1DS_RAMLOG_SIZE;
+	}
+	if (h->sz_lk && h->off_lk + ALIGN(h->sz_lk, 64) == h->off_llk)
+		h->off_linux = h->off_llk + ALIGN(h->sz_lk, 64);
+	else
+		h->off_linux = 512;
+	h->off_console = h->off_linux + ME1DS_LRR_SIZE;
+	h->sz_console = h->sz_buffer - h->off_console;
+	h->log_start = 0;
+	h->log_size = 0;
+	memset((char *)h + h->off_linux, 0, h->sz_buffer - h->off_linux);
+	__flush_dcache_area(h, ME1DS_RAMLOG_SIZE);
+	me1ds_rc_log = (char *)h + h->off_console;
+	me1ds_rc = h;
+}
 
 static void me1ds_ram_put(const char *s, unsigned n)
 {
-	unsigned int start = me1ds_ram_pos, i;
+	struct me1ds_rc_hdr *h = me1ds_rc;
+	u32 size = h->sz_console, start = h->log_start, rem;
 
-	for (; n; n--, s++) {
-		me1ds_ram[me1ds_ram_pos] = *s;
-		me1ds_ram_pos = (me1ds_ram_pos + 1) % ME1DS_RAMLOG_SIZE;
+	if (n >= size) {
+		memcpy(me1ds_rc_log, s + n - size, size);
+		h->log_start = 0;
+		h->log_size = size;
+		__flush_dcache_area(me1ds_rc_log, size);
+	} else if (n > size - start) {
+		rem = size - start;
+		memcpy(me1ds_rc_log + start, s, rem);
+		memcpy(me1ds_rc_log, s + rem, n - rem);
+		h->log_start = n - rem;
+		h->log_size = size;
+		__flush_dcache_area(me1ds_rc_log + start, rem);
+		__flush_dcache_area(me1ds_rc_log, n - rem);
+	} else {
+		memcpy(me1ds_rc_log + start, s, n);
+		h->log_start += n;
+		h->log_size += n;
+		if (h->log_start >= size)
+			h->log_start = 0;
+		if (h->log_size > size)
+			h->log_size = size;
+		__flush_dcache_area(me1ds_rc_log + start, n);
 	}
-	for (i = 0; i < sizeof(me1ds_end) - 1; i++)
-		me1ds_ram[(me1ds_ram_pos + i) % ME1DS_RAMLOG_SIZE] = me1ds_end[i];
-
-	if (me1ds_ram_pos + sizeof(me1ds_end) <= ME1DS_RAMLOG_SIZE &&
-	    me1ds_ram_pos >= start)
-		__flush_dcache_area(me1ds_ram + start,
-				    me1ds_ram_pos - start + sizeof(me1ds_end));
-	else
-		__flush_dcache_area(me1ds_ram, ME1DS_RAMLOG_SIZE);
+	__flush_dcache_area(h, sizeof(*h));
 }
 
 static void me1ds_con_write(struct console *con, const char *s, unsigned n)
@@ -185,7 +235,7 @@ static void me1ds_con_write(struct console *con, const char *s, unsigned n)
 	const u8 *glyphs = font_vga_8x16.data;
 	int b, y;
 
-	if (me1ds_ram)
+	if (me1ds_rc)
 		me1ds_ram_put(s, n);
 
 	if (!me1ds_keep_line(s, n))
@@ -224,8 +274,7 @@ static int __init me1ds_con_init(void)
 	initcall_debug = true;
 	console_loglevel = 8;
 	if (pfn_valid(__phys_to_pfn(ME1DS_RAMLOG_BASE))) {
-		me1ds_ram = phys_to_virt(ME1DS_RAMLOG_BASE);
-		memset(me1ds_ram, ' ', ME1DS_RAMLOG_SIZE);
+		me1ds_ram_init();
 		me1ds_ram_put("== me1ds 3.18 boot log ==\n", 26);
 	}
 	me1ds_text_on = true;
