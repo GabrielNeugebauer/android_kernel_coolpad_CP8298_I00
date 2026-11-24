@@ -10,7 +10,7 @@ ifeq ($(CONFIG_ARCH_MT6735M),y)
   obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 endif
 
-ifeq ($(CONFIG_ARCH_MT6735),y)
+ifneq ($(filter y,$(CONFIG_ARCH_MT6735) $(CONFIG_ARCH_MT6735M)),)
   obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 endif
 
