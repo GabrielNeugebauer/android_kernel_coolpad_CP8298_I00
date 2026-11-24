@@ -12,6 +12,11 @@
 #include "kd_imgsensor_define.h"
 #include "kd_camera_feature.h"
 #include "kd_camera_hw.h"
+
+#ifdef CONFIG_ARCH_MT6735M
+/* MT6735M has one camera MCLK, shared by both sensors (K130: GPIO45) */
+#define ISP_MCLK2_EN(en) ISP_MCLK1_EN(en)
+#endif
 /******************************************************************************
  * Debug configuration
 ******************************************************************************/
