@@ -34,7 +34,8 @@
 
 /* IRQ log print kthread */
 static struct task_struct *disp_irq_log_task;
-static wait_queue_head_t disp_irq_log_wq;
+/* static: the IRQ can fire (lk leaves the display running) before disp_init_irq */
+static DECLARE_WAIT_QUEUE_HEAD(disp_irq_log_wq);
 static int disp_irq_log_module;
 
 static int irq_init;
@@ -675,7 +676,6 @@ int disp_init_irq(void)
 #endif
 
 	/* create irq log thread */
-	init_waitqueue_head(&disp_irq_log_wq);
 	disp_irq_log_task = kthread_create(disp_irq_log_kthread_func, NULL, "ddp_irq_log_kthread");
 	if (IS_ERR(disp_irq_log_task))
 		DISPERR(" can not create disp_irq_log_task kthread\n");
