@@ -151,6 +151,9 @@
 	pinctrl-3 = <&CTP_pins_eint_output1>;
 	pinctrl-4 = <&CTP_pins_rst_output0>;
 	pinctrl-5 = <&CTP_pins_rst_output1>;
+	interrupt-parent = <&eintc>;
+	interrupts = <10 IRQ_TYPE_EDGE_FALLING>;
+	debounce = <10 0>;
 	status = "okay";
 };
 &pio {
