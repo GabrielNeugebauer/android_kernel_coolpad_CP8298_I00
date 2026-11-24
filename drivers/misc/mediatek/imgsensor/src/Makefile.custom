@@ -15,7 +15,10 @@ MTK_PROJECT_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$
 CONFIG_MTK_PLATFORM_SENSOR := $(CONFIG_MTK_PLATFORM)
 
 ifeq ($(CONFIG_ARCH_MT6735M),y)
+# LG K130 sensors and camera_hw were ported into the mt6735 tree
+ifneq ($(ARCH_MTK_PROJECT),me1ds)
 CONFIG_MTK_PLATFORM_SENSOR := mt6735m
+endif
 endif
 
 ifeq ($(CONFIG_ARCH_MT6753),y)
