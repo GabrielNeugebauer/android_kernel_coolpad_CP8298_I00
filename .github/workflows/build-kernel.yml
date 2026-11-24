@@ -2,7 +2,7 @@ name: Build me1ds kernel (3.18, LineageOS 15.1)
 
 on:
   push:
-    branches: ["feat/**", "lineage-15.1"]
+    branches: ["feat/**", "debug/**", "lineage-15.1"]
   workflow_dispatch:
 
 jobs:

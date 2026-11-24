@@ -23,6 +23,7 @@ arm64-obj-y		:= cputable.o debug-monitors.o entry.o irq.o fpsimd.o	\
 			   hyp-stub.o psci.o cpu_ops.o insn.o return_address.o	\
 			   cpuinfo.o cpu_errata.o alternative.o psci-call.o
 
+arm64-obj-$(CONFIG_ME1DS_BOOT_STRIPES)	+= me1ds_bootdbg.o
 arm64-obj-$(CONFIG_COMPAT)		+= sys32.o kuser32.o signal32.o 	\
 					   sys_compat.o				\
 					   ../../arm/kernel/opcodes.o

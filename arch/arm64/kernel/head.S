@@ -100,6 +100,32 @@
  */
 	__HEAD
 
+#include <asm/me1ds_bootdbg.h>
+
+#ifdef CONFIG_ME1DS_BOOT_STRIPES
+/* Paint stripe \n white in every buffer; MMU off, clobbers x9-x14. */
+	.macro	me1ds_stripe, n
+	ldr	x9, =(ME1DS_FB_BASE + \n * ME1DS_STRIPE_PITCH)
+	ldr	x14, =ME1DS_FB_BUF_SIZE
+	mov	x12, #ME1DS_FB_NR_BUF
+	mov	x13, #-1
+8:	mov	x10, x9
+	ldr	x11, =ME1DS_STRIPE_SIZE
+	add	x11, x10, x11
+9:	str	x13, [x10], #8
+	cmp	x10, x11
+	b.lo	9b
+	add	x9, x9, x14
+	subs	x12, x12, #1
+	b.ne	8b
+	dsb	sy
+	.endm
+#else
+	.macro	me1ds_stripe, n
+	.endm
+#endif
+
+
 	/*
 	 * DO NOT MODIFY. Image header expected by Linux boot-loaders.
 	 */
@@ -231,6 +257,7 @@ section_table:
 
 ENTRY(stext)
 	mov	x21, x0				// x21=FDT
+	me1ds_stripe 0				// kernel entered
 	bl	el2_setup			// Drop to EL1, w20=cpu_boot_mode
 	bl	__calc_phys_offset		// x24=PHYS_OFFSET, x28=PHYS_OFFSET-PAGE_OFFSET
 	bl	set_cpu_boot_mode_flag
@@ -240,6 +267,9 @@ ENTRY(stext)
 	mov	x23, x0				// x23=current cpu_table
 	cbz	x23, __error_p			// invalid processor (x23=0)?
 	bl	__vet_fdt
+	cbz	x21, 1f
+	me1ds_stripe 1				// FDT accepted
+1:
 	bl	__create_page_tables		// x25=TTBR0, x26=TTBR1
 	/*
 	 * The following calls CPU specific code in a position independent

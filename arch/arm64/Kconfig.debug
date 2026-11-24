@@ -54,4 +54,12 @@ config DEBUG_SET_MODULE_RONX
           against certain classes of kernel exploits.
           If in doubt, say "N".
 
+config ME1DS_BOOT_STRIPES
+	bool "Paint boot-progress stripes on the LG K130 framebuffer"
+	help
+	  Debug aid for the LG K130 (me1ds), which has no serial console.
+	  Boot stages paint white stripes into the framebuffer lk left on
+	  the video-mode panel; each finished initcall level adds a black
+	  notch at the left of its stripe.
+
 endmenu

@@ -525,3 +525,4 @@ CONFIG_MOBICORE_API=y
 
 # liuyahui1@yulong.com add charger battery config
 # CONFIG_MTK_FAN5405_SUPPORT is not set
+CONFIG_ME1DS_BOOT_STRIPES=y
