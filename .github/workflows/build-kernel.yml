@@ -12,6 +12,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: src
+          submodules: true
+
+      # ReSukiSU derives its version from the submodule's commit count and tag
+      - name: Unshallow KernelSU
+        run: |
+          cd src/KernelSU
+          git fetch -q --unshallow --tags origin || git fetch -q --tags origin
+          echo "KernelSU $(git describe --tags --abbrev=0) commits $(git rev-list --count HEAD)"
 
       - name: Fetch GCC 4.9 aarch64 toolchain
         run: |
@@ -23,7 +31,7 @@ jobs:
           mkdir -p out
           docker run --rm -v "$GITHUB_WORKSPACE:/w" -w /w/src ubuntu:18.04 bash -ec '
             apt-get update -qq
-            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq bc bison flex make gcc libc6-dev libssl-dev python perl cpio liblz4-tool >/dev/null
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq bc bison flex make gcc libc6-dev libssl-dev python perl cpio liblz4-tool git >/dev/null
             export ARCH=arm64 CROSS_COMPILE=/w/tc/bin/aarch64-linux-android-
             make O=/w/out me1ds_defconfig
             make O=/w/out -k -j"$(nproc)" 2>&1 | tee /w/out/build.log; exit ${PIPESTATUS[0]}
