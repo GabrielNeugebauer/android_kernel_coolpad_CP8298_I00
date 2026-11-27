@@ -2036,7 +2036,17 @@ static void _mt_cpufreq_set_cur_freq(struct mt_cpu_dvfs *p, unsigned int cur_khz
 	if (cur_khz == target_khz)
 		return;
 
+#ifdef ME1DS_STOCK_MAX_KHZ
+	/*
+	 * The level 1 path only hops the PLL DDS and keeps the post divider
+	 * (/2 from preloader), so OPPs above 1001MHz came out halved. Use the
+	 * path of the >1GHz D2 tables: full ARMPLL reprogram below
+	 * CPUFREQ_BOUNDARY_FOR_FHCTL, FHCTL hopping without post divider above.
+	 */
+	if (0) {
+#else
 	if (p->cpu_level == CPU_LEVEL_1) {
+#endif
 		unsigned int dds = 0;
 		unsigned int sel = 0;
 		unsigned int ckdiv1_val = _GET_BITS_VAL_(4:0, cpufreq_read(TOP_CKDIV1));
