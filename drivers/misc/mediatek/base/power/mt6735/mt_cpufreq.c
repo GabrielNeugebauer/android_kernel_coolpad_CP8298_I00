@@ -739,18 +739,19 @@ static struct mt_cpu_freq_info opp_tbl_e1_0[] = {
 /* CPU LEVEL 1, 1GHz segment */
 #ifdef CONFIG_ME1DS_CPU_OC
 /*
- * LG K130: the 1GHz table plus the D2 1.09/1.14/1.25GHz bins, all at the
- * 1.25V ceiling of every D2 table. 923, 793 and 364MHz make room (PTP-OD
- * has 8 bins). Boots capped at ME1DS_STOCK_MAX_KHZ; raise scaling_max_freq
- * to use the rest.
+ * LG K130: the 1GHz table plus the D2 35M+ 1.09GHz bin at 1.25V, the
+ * ceiling of every D2 table (364MHz makes room; PTP-OD has 8 bins).
+ * ARMPLL_CON1 ignores DDS above 1092MHz on this part (direct writes
+ * and FHCTL hops alike), so the 1.14/1.25GHz bins are not reachable.
+ * Boots capped at ME1DS_STOCK_MAX_KHZ; raise scaling_max_freq for 1092.
  */
 #define ME1DS_STOCK_MAX_KHZ	CPU_DVFS_FREQ2
 static struct mt_cpu_freq_info opp_tbl_e1_1[] = {
-	OP(CPU_DVFS_FREQ0_1, 125000),
-	OP(CPU_DVFS_FREQ0, 125000),
 	OP(CPU_DVFS_FREQ1_1, 125000),
 	OP(CPU_DVFS_FREQ2, 125000),
+	OP(CPU_DVFS_FREQ3, 121875),
 	OP(CPU_DVFS_FREQ5, 118750),
+	OP(CPU_DVFS_FREQ6, 115000),
 	OP(CPU_DVFS_FREQ7, 110000),
 	OP(CPU_DVFS_FREQ8, 105000),
 	OP(CPU_DVFS_FREQ10, 95000),
@@ -3630,7 +3631,7 @@ static void _mt_cpufreq_calc_power_throttle_idx(struct mt_cpu_dvfs *p)
 			p->idx_pwr_thro_max_opp = 3;
 #ifdef ME1DS_STOCK_MAX_KHZ
 			if (p->cpu_level == CPU_LEVEL_1)
-				p->idx_pwr_thro_max_opp = 5;	/* 637MHz */
+				p->idx_pwr_thro_max_opp = 4;	/* 793MHz */
 #endif
 			break;
 #else				/* 6735/6753 */
@@ -3663,7 +3664,7 @@ static void _mt_cpufreq_calc_power_throttle_idx(struct mt_cpu_dvfs *p)
 			break;
 		case CPU_LEVEL_1:
 #ifdef ME1DS_STOCK_MAX_KHZ
-			p->idx_pwr_thro_max_opp = 3;	/* 988MHz */
+			p->idx_pwr_thro_max_opp = 1;	/* 988MHz */
 #else
 			p->idx_pwr_thro_max_opp = 0;
 #endif
