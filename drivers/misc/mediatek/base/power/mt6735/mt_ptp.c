@@ -1037,6 +1037,11 @@ static void get_freq_table_cpu(struct ptp_det *det)
 	/* det->max_freq_khz = mt_cpufreq_get_freq_by_idx(cpu, 0); */
 	for (i = 0; i < NR_FREQ; i++) {
 		det->freq_tbl[i] = PERCENT(mt_cpufreq_get_freq_by_idx(cpu, i), det->max_freq_khz);
+#ifdef CONFIG_ME1DS_CPU_OC
+		/* above-1GHz OPPs keep nominal volt in mt_cpufreq; stay in range */
+		if (det->freq_tbl[i] > 100)
+			det->freq_tbl[i] = 100;
+#endif
 		if (0 == det->freq_tbl[i])
 			break;
 	}

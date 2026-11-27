@@ -737,6 +737,24 @@ static struct mt_cpu_freq_info opp_tbl_e1_0[] = {
 };
 
 /* CPU LEVEL 1, 1GHz segment */
+#ifdef CONFIG_ME1DS_CPU_OC
+/*
+ * LG K130: the 1GHz table plus the D2 1.09/1.14/1.25GHz bins, all at the
+ * 1.25V ceiling of every D2 table. 923, 793 and 364MHz make room (PTP-OD
+ * has 8 bins). Boots capped at ME1DS_STOCK_MAX_KHZ; raise scaling_max_freq
+ * to use the rest.
+ */
+#define ME1DS_STOCK_MAX_KHZ	CPU_DVFS_FREQ2
+static struct mt_cpu_freq_info opp_tbl_e1_1[] = {
+	OP(CPU_DVFS_FREQ0_1, 125000),
+	OP(CPU_DVFS_FREQ0, 125000),
+	OP(CPU_DVFS_FREQ1_1, 125000),
+	OP(CPU_DVFS_FREQ2, 125000),
+	OP(CPU_DVFS_FREQ5, 118750),
+	OP(CPU_DVFS_FREQ7, 110000),
+	OP(CPU_DVFS_FREQ8, 105000),
+	OP(CPU_DVFS_FREQ10, 95000),
+#else
 static struct mt_cpu_freq_info opp_tbl_e1_1[] = {
 	OP(CPU_DVFS_FREQ2, 125000),
 	OP(CPU_DVFS_FREQ3, 121875),
@@ -746,6 +764,7 @@ static struct mt_cpu_freq_info opp_tbl_e1_1[] = {
 	OP(CPU_DVFS_FREQ8, 105000),
 	OP(CPU_DVFS_FREQ9, 100000),
 	OP(CPU_DVFS_FREQ10, 95000),
+#endif
 };
 
 /* CPU LEVEL 2, 1.25GHz segment */
@@ -1740,8 +1759,16 @@ int mt_cpufreq_update_volt(enum mt_cpu_dvfs_id id, unsigned int *volt_tbl, int n
 	cpufreq_lock(flags);
 
 	/* update volt table */
-	for (i = 0; i < nr_volt_tbl; i++)
+	for (i = 0; i < nr_volt_tbl; i++) {
+#ifdef ME1DS_STOCK_MAX_KHZ
+		/* PTP-OD is calibrated up to 1GHz; keep nominal volt above it */
+		if (p->opp_tbl[i].cpufreq_khz > ME1DS_STOCK_MAX_KHZ) {
+			p->opp_tbl[i].cpufreq_volt = p->opp_tbl[i].cpufreq_volt_org;
+			continue;
+		}
+#endif
 		p->opp_tbl[i].cpufreq_volt = PMIC_VAL_TO_VOLT(volt_tbl[i]);
+	}
 
 	/* set volt */
 #ifdef CONFIG_CPU_DVFS_TURBO_MODE
@@ -3031,6 +3058,8 @@ static unsigned int _mt_cpufreq_calc_new_opp_idx(struct mt_cpu_dvfs *p, int new_
 #ifdef CONFIG_ARCH_MT6753
 		/* idx 2 for Vboot = 1.2V */
 		new_opp_idx = 2;
+#elif defined(ME1DS_STOCK_MAX_KHZ)
+		new_opp_idx = _mt_cpufreq_get_idx_by_freq(p, ME1DS_STOCK_MAX_KHZ, CPUFREQ_RELATION_L);
 #else
 		/* idx 0 for Vboot = 1.25V */
 		new_opp_idx = 0;
@@ -3589,6 +3618,10 @@ static void _mt_cpufreq_calc_power_throttle_idx(struct mt_cpu_dvfs *p)
 		case CPU_LEVEL_2:
 		case CPU_LEVEL_3:
 			p->idx_pwr_thro_max_opp = 3;
+#ifdef ME1DS_STOCK_MAX_KHZ
+			if (p->cpu_level == CPU_LEVEL_1)
+				p->idx_pwr_thro_max_opp = 5;	/* 637MHz */
+#endif
 			break;
 #else				/* 6735/6753 */
 		case CPU_LEVEL_0:
@@ -3619,7 +3652,11 @@ static void _mt_cpufreq_calc_power_throttle_idx(struct mt_cpu_dvfs *p)
 			p->idx_pwr_thro_max_opp = 1;
 			break;
 		case CPU_LEVEL_1:
+#ifdef ME1DS_STOCK_MAX_KHZ
+			p->idx_pwr_thro_max_opp = 3;	/* 988MHz */
+#else
 			p->idx_pwr_thro_max_opp = 0;
+#endif
 			break;
 #else				/* 6735/6753 */
 		case CPU_LEVEL_0:
@@ -3957,6 +3994,13 @@ static int _mt_cpufreq_init(struct cpufreq_policy *policy)
 
 		if (_mt_cpufreq_sync_opp_tbl_idx(p) >= 0)
 			p->idx_normal_max_opp = p->idx_opp_tbl;
+#ifdef ME1DS_STOCK_MAX_KHZ
+		if (lv == CPU_LEVEL_1) {
+			policy->max = ME1DS_STOCK_MAX_KHZ;
+			p->idx_normal_max_opp = _mt_cpufreq_get_idx_by_freq(
+				p, ME1DS_STOCK_MAX_KHZ, CPUFREQ_RELATION_L);
+		}
+#endif
 
 		/* restore default volt, sync opp idx, set default limit */
 		_mt_cpufreq_restore_default_volt(p);

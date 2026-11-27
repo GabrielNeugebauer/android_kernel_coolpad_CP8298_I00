@@ -14,3 +14,12 @@ config MTK_DISABLE_SODI
 	---help---
 	  Select if you want to disable Screen ON DeepIdle (SODI).
 
+
+config ME1DS_CPU_OC
+	bool "LG K130: CPU OPPs up to 1.25GHz"
+	depends on ARCH_MT6735M
+	default n
+	help
+	  Adds the MT6735M 1.09/1.14/1.25GHz bins (1.25V) to the 1GHz CPU
+	  table. The CPU boots capped at 988MHz; raise scaling_max_freq to
+	  use the higher steps. PTP-OD voltages apply only up to 988MHz.
