@@ -2190,10 +2190,9 @@ static void _mt_cpufreq_set_cur_freq(struct mt_cpu_dvfs *p, unsigned int cur_khz
 	}
 
 #else  /* __KERNEL__ */
-#if !defined(ME1DS_STOCK_MAX_KHZ)
+#if 1
 			mt_dfs_armpll(FH_ARM_PLLID, dds);
 #else
-			/* FHCTL ignores hops above 1092MHz on this part */
 			_mt_cpufreq_dfs_by_set_armpll(p, dds, 8);
 #endif
 #endif /* ! __KERNEL__ */
